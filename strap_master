@@ -1,11 +1,10 @@
 #!/usr/bin/env bash
-set -x 
-
+sudo yum -y install tree
 # install check 
 if ! rpm -qa |grep -q puppetserver; then
   
   # install tools
-  sudo yum -y install wget vim curl jq 
+  sudo yum -y install wget vim curl jq tree
   
   # for centos RPM's visit yum.puppetlabs.com and browse for your RPM releast version && install server
   sudo rpm -ihv http://yum.puppetlabs.com/puppet-release-el-7.noarch.rpm
@@ -25,3 +24,24 @@ fi
 if ! echo $MANPATH | grep -q /opt/puppetlabs/puppet/share/man ; then
   export MANPATH=$MANPATH:/opt/puppetlabs/puppet/share/man
 fi' | sudo tee /etc/profile.d/puppet-agent.sh
+
+echo * main configuration directory of puppet *
+sudo tree /etc/puppetlabs/
+echo -------------------------
+echo * enviorments directory default is production * 
+sudo tree /etc/puppetlabs/code/environments/
+echo -------------------------
+echo * global config files for puppet, hiera, and ssl certficates *
+sudo tree /etc/puppetlabs/puppet
+echo -------------------------
+echo * directory contains global config files that do not need to be changed for optimal server configuration *
+sudo tree /etc/puppetlabs/puppetserver
+echo -------------------------
+echo * parameter file for the puppet service *
+sudo ls -al /etc/sysconfig/puppet 
+echo -------------------------
+echo * environment specific parameter file for the puppet server service *
+sudo ls -al /etc/sysconfig/puppetserver
+echo -------------------------
+echo * all data files and binaries related to factor, puppet, and puppet server are found here *
+sudo ls -al /opt/puppetlabs
