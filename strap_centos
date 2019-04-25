@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+set -x 
+
+# install tools 
+
+sudo yum -y install wget vim curl jq 
+
+# for centos RPM's visit yum.puppetlabs.com and browse for your RPM releast version && install server
+sudo rpm -ihv http://yum.puppetlabs.com/puppet-release-el-7.noarch.rpm
+sudo yum -y install puppet-agent 
