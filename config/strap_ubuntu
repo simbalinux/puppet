@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+set -x 
+
+
+if ! dpkg -l |grep -q puppet-agent; then
+
+  # install tools 
+  
+  sudo yum -y install wget vim curl jq 
+  
+  # for ubuntu APT visit apt.puppetlabs.com and browse for your release version && install server
+  sudo wget http://apt.puppetlabs.com/puppetlabs-release-pc1-xenial.deb 
+  sudo dpkg -i puppetlabs-release-pc1-xenial.deb 
+  sudo apt-get -y update
+  sudo apt-get -y install puppet-agent
+fi
+
+sudo echo '
+# Add /opt/puppetlabs/bin to the path for sh compatible users
+
+if ! echo $PATH | grep -q /opt/puppetlabs/bin ; then
+  export PATH=$PATH:/opt/puppetlabs/bin
+  export PATH=$PATH:/opt/puppetlabs/puppet/bin
+fi
+
+if ! echo $MANPATH | grep -q /opt/puppetlabs/puppet/share/man ; then
+  export MANPATH=$MANPATH:/opt/puppetlabs/puppet/share/man
+fi' | sudo tee /etc/profile.d/puppet-agent.sh
+
