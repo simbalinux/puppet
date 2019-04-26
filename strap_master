@@ -1,47 +1,64 @@
 #!/usr/bin/env bash
-sudo yum -y install tree
+set -x 
 # install check 
 if ! rpm -qa |grep -q puppetserver; then
-  
+
+  # set host info
+
+  echo "192.168.33.11      puppet-centos-agent puppet-centos-agent.localhost.com"  >> /etc/hosts
+  sudo hostnamectl set-hostname puppetserver
+
   # install tools
   sudo yum -y install wget vim curl jq tree
   
-  # for centos RPM's visit yum.puppetlabs.com and browse for your RPM releast version && install server
-  sudo rpm -ihv http://yum.puppetlabs.com/puppet-release-el-7.noarch.rpm
+  # for centos RPM's visit yum.puppetlabs.com and browse for your RPM 
+  sudo wget https://yum.puppetlabs.com/puppetlabs-release-pc1-el-7.noarch.rpm
+  sudo rpm -ivh puppetlabs-release-pc1-el-7.noarch.rpm
   sudo yum -y install puppetserver
 
+  # add ./puppetlabs/puppet/bin to PATH
+  echo ' 
+  # Add /opt/puppetlabs/bin to the path for sh compatible users
+  
+  if ! echo $PATH | grep -q /opt/puppetlabs/bin ; then
+    export PATH=$PATH:/opt/puppetlabs/bin
+    export PATH=$PATH:/opt/puppetlabs/puppet/bin
+  fi
+  
+  if ! echo $MANPATH | grep -q /opt/puppetlabs/puppet/share/man ; then
+    export MANPATH=$MANPATH:/opt/puppetlabs/puppet/share/man
+  fi' | tee /etc/profile.d/puppet-agent.sh
+
+  # change memory settings for low resource setups 
+  sudo sed -i 's\JAVA_ARGS="-Xms2g -Xmx2g -XX:MaxPermSize=256m"\JAVA_ARGS="-Xms1g -Xmx1g -XX:MaxPermSize=256m"\g' /etc/sysconfig/puppetserver
+
+  # puppet directory & file info
+
+  echo * main configuration directory of puppet *
+  tree /etc/puppetlabs/
+  echo -------------------------
+  echo * enviorments directory default is production * 
+  tree /etc/puppetlabs/code/environments/
+  echo -------------------------
+  echo * global config files for puppet, hiera, and ssl certficates *
+  tree /etc/puppetlabs/puppet
+  echo -------------------------
+  echo * directory contains global config files that do not need to be changed for optimal server configuration *
+  tree /etc/puppetlabs/puppetserver
+  echo -------------------------
+  echo * parameter file for the puppet service *
+  ls -al /etc/sysconfig/puppet 
+  echo -------------------------
+  echo * environment specific parameter file for the puppet server service *
+  ls -al /etc/sysconfig/puppetserver
+  echo -------------------------
+  echo * all data files and binaries related to factor, puppet, and puppet server are found here *
+  ls -al /opt/puppetlabs
 fi
 
+# start the puppet server && check process, if success then server is ready to accept incoming connections
 
-sudo echo ' 
-# Add /opt/puppetlabs/bin to the path for sh compatible users
+sudo systemctl start puppetserver
+sudo ps -ef |grep puppet
 
-if ! echo $PATH | grep -q /opt/puppetlabs/bin ; then
-  export PATH=$PATH:/opt/puppetlabs/bin
-  export PATH=$PATH:/opt/puppetlabs/puppet/bin
-fi
 
-if ! echo $MANPATH | grep -q /opt/puppetlabs/puppet/share/man ; then
-  export MANPATH=$MANPATH:/opt/puppetlabs/puppet/share/man
-fi' | sudo tee /etc/profile.d/puppet-agent.sh
-
-echo * main configuration directory of puppet *
-sudo tree /etc/puppetlabs/
-echo -------------------------
-echo * enviorments directory default is production * 
-sudo tree /etc/puppetlabs/code/environments/
-echo -------------------------
-echo * global config files for puppet, hiera, and ssl certficates *
-sudo tree /etc/puppetlabs/puppet
-echo -------------------------
-echo * directory contains global config files that do not need to be changed for optimal server configuration *
-sudo tree /etc/puppetlabs/puppetserver
-echo -------------------------
-echo * parameter file for the puppet service *
-sudo ls -al /etc/sysconfig/puppet 
-echo -------------------------
-echo * environment specific parameter file for the puppet server service *
-sudo ls -al /etc/sysconfig/puppetserver
-echo -------------------------
-echo * all data files and binaries related to factor, puppet, and puppet server are found here *
-sudo ls -al /opt/puppetlabs

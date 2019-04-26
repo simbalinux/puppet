@@ -8,14 +8,14 @@
 Vagrant.configure("2") do |config|
   config.vm.provider "virtualbox" do |v|
     v.memory = 2048
-    v.cpus   = 1 
+    v.cpus   = 2 
   end
 
   config.vm.define "puppetmaster" do |pm|
     pm.vm.box = "centos/7"
     pm.vm.network "private_network", ip: "192.168.33.10"
     pm.vm.hostname = "puppetmaster"
-    pm.vm.provision "shell", path: "strap_master", privileged: false
+    pm.vm.provision "shell", path: "strap_master"
   end
 
   config.vm.define "puppet-agent-centos" do |pac|
