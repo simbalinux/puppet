@@ -62,5 +62,10 @@ if ! rpm -qa |grep -q puppetserver; then
   sudo ps -ef |grep puppet
 fi
 # copy local production data over to puppetserver
-sudo cp -r /vagrant/production /etc/puppetlabs/code/environments/
-sudo systemctl start puppetserver 
+sudo rm -rf /etc/puppetlabs/code/environments/production
+sudo cp -rf /vagrant/production /etc/puppetlabs/code/environments/
+
+PUPPET_STATUS=$(ps -aux |grep puppet |wc -l)
+if [ "$PUPPET_STATUS" -lt 2 ]; then
+  sudo systemctl restart puppetserver 
+fi
