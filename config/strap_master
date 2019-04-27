@@ -1,23 +1,25 @@
 #!/usr/bin/env bash
 set -x 
+
 # install check 
 if ! rpm -qa |grep -q puppetserver; then
-
-  # set host info
-
-  echo "192.168.33.11      puppet-centos-agent puppet-centos-agent.localhost.com"  >> /etc/hosts
-  sudo hostnamectl set-hostname puppetserver
-
-  # install tools
+  # packages 
   sudo yum -y install wget vim curl jq tree
-  
-  # for centos RPM's visit yum.puppetlabs.com and browse for your RPM 
+
+  # disable "secure_path" in sudoers file 
+  sudo sed -i 's\Defaults    secure_path = /sbin:/bin:/usr/sbin:/usr/bin\#Defaults    secure_path = /sbin:/bin:/usr/sbin:/usr/bin\g' /etc/sudoers
+
+  # host info 
+  echo "192.168.33.11      puppet-centos-agent puppet-centos-agent.localhost.com"  >> /etc/hosts
+  sudo hostnamectl set-hostname puppetmaster
+
+ # for centos RPM's visit yum.puppetlabs.com and browse for your RPM releast version && install server
   sudo wget https://yum.puppetlabs.com/puppetlabs-release-pc1-el-7.noarch.rpm
   sudo rpm -ivh puppetlabs-release-pc1-el-7.noarch.rpm
   sudo yum -y install puppetserver
 
   # add ./puppetlabs/puppet/bin to PATH
-  echo ' 
+  sudo echo ' 
   # Add /opt/puppetlabs/bin to the path for sh compatible users
   
   if ! echo $PATH | grep -q /opt/puppetlabs/bin ; then
@@ -27,7 +29,7 @@ if ! rpm -qa |grep -q puppetserver; then
   
   if ! echo $MANPATH | grep -q /opt/puppetlabs/puppet/share/man ; then
     export MANPATH=$MANPATH:/opt/puppetlabs/puppet/share/man
-  fi' | tee /etc/profile.d/puppet-agent.sh
+  fi' | sudo tee /etc/profile.d/puppet-agent.sh
 
   # change memory settings for low resource setups 
   sudo sed -i 's\JAVA_ARGS="-Xms2g -Xmx2g -XX:MaxPermSize=256m"\JAVA_ARGS="-Xms1g -Xmx1g -XX:MaxPermSize=256m"\g' /etc/sysconfig/puppetserver
@@ -54,11 +56,11 @@ if ! rpm -qa |grep -q puppetserver; then
   echo -------------------------
   echo * all data files and binaries related to factor, puppet, and puppet server are found here *
   ls -al /opt/puppetlabs
+  
+  # start server and check process
+  sudo systemctl start puppetserver
+  sudo ps -ef |grep puppet
 fi
-
-# start the puppet server && check process, if success then server is ready to accept incoming connections
-
-sudo systemctl start puppetserver
-sudo ps -ef |grep puppet
-
-
+# copy local production data over to puppetserver
+sudo cp -r /vagrant/production /etc/puppetlabs/code/environments/
+sudo systemctl start puppetserver 
