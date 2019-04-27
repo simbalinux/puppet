@@ -1,25 +1,36 @@
-class webserver { 
-	package { 'httpd':
+class webserver (
+		$packagename 	= $::webserver::parameters::packagename,
+		$configfile	= $::webserver::parameters::configfile,
+		$configsource   = $::webserver::parameters::configsource,
+		$vhostfile	= $::webserver::parameters::vhostfile
+		) inherits ::webserver::parameters { 
+	package { 'webserver-package':
+		name   => $packagename,
 		ensure => present
 	}
 
-	file { '/etc/httpd/conf/httpd.conf': 
-		ensure => file,
-		source  => 'puppet:///modules/webserver/httpd.conf',
-		require => Package['httpd'],
+	file { 'config-file': 
+		path 	=> $configfile,
+		ensure  => file,
+		source  => $configsource,
+		require => Package['webserver-package'],
+		notify  => Service['webserver-service'],
 	}
 	
-	file { '/etc/httpd/conf.d/vhost.conf':
- 		ensure => file, 
+	file { 'vhost-file':
+ 		path    => $vhostfile, 
+		ensure  => file,
 		content => template("webserver/vhost.conf.erb"),
-  		require => Package['httpd'],
+  		require => Package['webserver-package'],
+ 		notify  => Service['webserver-service'],
 	}
 
-	service { 'httpd':
-		ensure => running,
-		enable => true,
+	service { 'webserver-service':
+		name       => $packagename,
+		ensure     => running,
+		enable     => true,
 		hasrestart => true,
-		require => [ File['/etc/httpd/conf/httpd.conf'], File['/etc/httpd/conf/httpd.conf'] ]
+		require    => [ File['config-file'], File['vhost-file'] ],
 	}
 
 }
