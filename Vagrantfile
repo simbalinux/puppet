@@ -14,21 +14,21 @@ Vagrant.configure("2") do |config|
   config.vm.define "puppetmaster" do |pm|
     pm.vm.box = "centos/7"
     pm.vm.network "private_network", ip: "192.168.33.10"
-    pm.vm.hostname = "puppetmaster"
+    pm.vm.hostname = "puppetmaster.local"
     pm.vm.provision "shell", path: "./config/strap_master", privileged: false 
   end
 
   config.vm.define "puppet-agent-centos" do |pac|
     pac.vm.box = "centos/7"
     pac.vm.network "private_network", ip: "192.168.33.11"
-    pac.vm.hostname = "puppet-agent-centos"
+    pac.vm.hostname = "puppet-agent-centos.local"
     pac.vm.provision "shell", path: "./config/strap_centos", privileged: false
   end
   
   config.vm.define "puppet-agent-ubuntu" do |pau|
     pau.vm.box = "ubuntu/xenial64"
     pau.vm.network "private_network", ip:"192.168.33.12"
-    pau.vm.hostname = "puppet-agent-ubuntu"
+    pau.vm.hostname = "puppet-agent-ubuntu.local"
     pau.vm.provision "shell", path: "./config/strap_ubuntu", privileged: false
   end
 end
