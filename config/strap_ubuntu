@@ -29,7 +29,7 @@ if ! dpkg -l |grep -q puppet-agent; then
   if ! echo $MANPATH | grep -q /opt/puppetlabs/puppet/share/man ; then
     export MANPATH=$MANPATH:/opt/puppetlabs/puppet/share/man
   fi' | sudo tee /etc/profile.d/puppet-agent.sh
-  
-  sudo systemctl start puppet
-  #sudo -i puppet agent --test --server puppetmaster
+
+  # add dns_alt_names to /etc/hosts must be approved in the masters puppet.conf under dns_alt_names in order to work properly 
+  sudo grep -q -F '192.168.33.10  puppet puppetmaster puppetmaster.local puppetserver' /etc/hosts || sudo echo '192.168.33.10  puppet puppetmaster puppetmaster.local puppetserver' | sudo tee -a  /etc/hosts
 fi
