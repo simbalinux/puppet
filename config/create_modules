@@ -23,7 +23,7 @@ sudo echo '
 
 sudo puppet module build 
 
-echo 'login to your forge.puppet.com account and upload/publish the module through the UI"
+echo "login to your forge.puppet.com account and upload/publish the module through the UI"
 
 
 
