@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+
+## you will need to create an account in forge.puppet.com to upload the module 
+PUPPET_DIR=/etc/puppetlabs/code/environments/production/modules
+cd "$PUPPET_DIR"
+sudo puppet module generate --skip-interview extendingpuppet-examplemodule
+cd $PWD/examplemodule
+sudo echo '
+{
+  "name": "extendingpuppet-examplemodule",
+  "version": "0.1.0",
+  "author": "extendingpuppet",
+  "summary": "An example module",
+  "license": "Apache-2.0",
+  "source": "https://github.com/simbalinux/examplemodule.git",
+  "project_page": null,
+  "issues_url": null,
+  "dependencies": [
+    {"name":"puppetlabs-stdlib","version_requirement":">= 1.0.0"}
+  ],
+  "data_provider": null
+}' | sudo tee "$PUPPET_DIR"/metadata.json 
+
+sudo puppet module build 
+
+echo 'login to your forge.puppet.com account and upload/publish the module through the UI"
+
+
+
