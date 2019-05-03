@@ -2,7 +2,7 @@
 set -x 
 
 # install check 
-if  ! rpm -qa |grep -q puppetserver; then
+if ! rpm -qa |grep -q puppetserver; then
   # packages 
   sudo yum -y install wget vim curl jq tree
 
@@ -11,8 +11,6 @@ if  ! rpm -qa |grep -q puppetserver; then
 
   # host info 
   echo "192.168.33.11      puppet-centos-agent puppet-centos-agent.localhost.com"  >> /etc/hosts
-  sudo hostnamectl set-hostname puppetmaster
-
  # for centos RPM's visit yum.puppetlabs.com and browse for your RPM releast version && install server
   sudo wget https://yum.puppetlabs.com/puppetlabs-release-pc1-el-7.noarch.rpm
   sudo rpm -ivh puppetlabs-release-pc1-el-7.noarch.rpm
@@ -81,10 +79,11 @@ if  ! rpm -qa |grep -q puppetserver; then
   # start server and check process
   sudo systemctl start puppetserver
   sudo ps -ef |grep puppet
+
+  # copy local production data over to puppetserver
+  sudo rm -rf /etc/puppetlabs/code/environments/production
+  sudo cp -rf /vagrant/production /etc/puppetlabs/code/environments/
 fi
-# copy local production data over to puppetserver
-sudo rm -rf /etc/puppetlabs/code/environments/production
-sudo cp -rf /vagrant/production /etc/puppetlabs/code/environments/
 
 PUPPET_STATUS=$(ps -aux |grep puppet |wc -l)
 if [ "$PUPPET_STATUS" -lt 2 ]; then
